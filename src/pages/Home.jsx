@@ -45,6 +45,26 @@ export default function Home() {
     setTimeout(() => setMsg(null), 2000);
   };
 
+  const [seeding, setSeeding] = useState(false);
+
+  const handleSeedMenu = async () => {
+    try {
+      setSeeding(true);
+      await api.get('/seed');
+      const [fRes, cRes] = await Promise.all([
+        api.get('/foods'),
+        api.get('/categories'),
+      ]);
+      setFoods(fRes.data);
+      setCategories(cRes.data);
+      setMsg({ type: 'success', text: 'Sample menu items loaded successfully!' });
+    } catch (err) {
+      setMsg({ type: 'danger', text: errMsg(err) });
+    } finally {
+      setSeeding(false);
+    }
+  };
+
   return (
     <>
       <section className="hero">
@@ -109,7 +129,10 @@ export default function Home() {
           })}
           {foods.length === 0 && (
             <div className="col-12 text-center py-5">
-              <p className="text-muted fs-5">No dishes found matching your selection.</p>
+              <p className="text-muted fs-5 mb-3">No dishes found in the menu yet.</p>
+              <button className="btn btn-brand" onClick={handleSeedMenu} disabled={seeding}>
+                {seeding ? 'Loading Dishes...' : '🍕 Load Sample Menu Dishes'}
+              </button>
             </div>
           )}
         </div>
